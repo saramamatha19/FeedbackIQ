@@ -97,9 +97,3 @@ export interface DashboardResponse {
   generated_at: string
   data: DashboardData
 }
-
-export interface NLQueryResponse {
-  filters_applied: Record<string, unknown>
-  result_count: number
-  results: Feedback[]
-}

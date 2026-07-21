@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { Feedback, NLQueryResponse, Prediction } from './types'
+import type { Feedback, Prediction } from './types'
 
 export async function fetchFeedback(params: { upload_id?: string; limit?: number; offset?: number }) {
   const res = await apiClient.get<Feedback[]>('/feedback', { params })
@@ -18,11 +18,6 @@ export async function rerunFeedback(feedbackId: string) {
 
 export async function fetchPredictionHistory(feedbackId: string) {
   const res = await apiClient.get<Prediction[]>(`/feedback/${feedbackId}/predictions/history`)
-  return res.data
-}
-
-export async function runNlQuery(query: string) {
-  const res = await apiClient.post<NLQueryResponse>('/query/nl', { query })
   return res.data
 }
 

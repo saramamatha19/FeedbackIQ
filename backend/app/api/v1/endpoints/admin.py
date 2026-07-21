@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -8,8 +10,9 @@ from app.db.models.prediction import AIPrediction
 from app.db.models.upload import Upload
 from app.db.models.user import User
 from app.db.session import get_db
-from app.repositories import user_repo
+from app.repositories import feedback_repo, user_repo
 from app.schemas.auth import UserOut
+from app.schemas.feedback import FeedbackOut, PredictionOut
 from app.schemas.upload import UploadOut
 from app.services import dashboard_service
 
@@ -61,3 +64,54 @@ def list_all_uploads(
     return list(
         db.scalars(select(Upload).order_by(Upload.created_at.desc()).limit(limit).offset(offset))
     )
+
+
+@router.get("/users/{user_id}/uploads", response_model=list[UploadOut])
+def list_user_uploads(
+    user_id: uuid.UUID,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    return list(
+        db.scalars(
+            select(Upload)
+            .where(Upload.user_id == user_id)
+            .order_by(Upload.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+    )
+
+
+@router.get("/users/{user_id}/feedback", response_model=list[FeedbackOut])
+def list_user_feedback(
+    user_id: uuid.UUID,
+    upload_id: uuid.UUID | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    rows = feedback_repo.list_with_current_predictions(
+        db, user_id=user_id, upload_id=upload_id, limit=limit, offset=offset
+    )
+    out = []
+    for row in rows:
+        current = next((p for p in row.predictions if p.is_current), None)
+        item = FeedbackOut.model_validate(row)
+        item.prediction = PredictionOut.model_validate(current) if current else None
+        out.append(item)
+    return out
+
+
+@router.get("/feedback/{feedback_id}", response_model=FeedbackOut)
+def get_any_feedback(feedback_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    row = db.get(Feedback, feedback_id)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feedback not found")
+    current = feedback_repo.current_prediction_for(db, feedback_id)
+    item = FeedbackOut.model_validate(row)
+    item.prediction = PredictionOut.model_validate(current) if current else None
+    return item

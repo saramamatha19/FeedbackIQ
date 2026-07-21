@@ -20,11 +20,22 @@ function Tile({ label, value, index, accent }: { label: string; value: string | 
   )
 }
 
-export function KpiRow({ data, isLoading }: { data?: DashboardData; isLoading: boolean }) {
+export function KpiRow({
+  data,
+  isLoading,
+  showSeverity = true,
+}: {
+  data?: DashboardData
+  isLoading: boolean
+  showSeverity?: boolean
+}) {
+  const tileCount = showSeverity ? 4 : 3
+  const gridClass = showSeverity ? 'grid grid-cols-2 gap-4 md:grid-cols-4' : 'grid grid-cols-2 gap-4 md:grid-cols-3'
+
   if (isLoading || !data) {
     return (
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className={gridClass}>
+        {Array.from({ length: tileCount }).map((_, i) => (
           <Card key={i} className="p-5">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="mt-3 h-7 w-16" />
@@ -37,11 +48,11 @@ export function KpiRow({ data, isLoading }: { data?: DashboardData; isLoading: b
   const { overview } = data
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className={gridClass}>
       <Tile label="Total Feedback" value={overview.total_feedback} index={0} />
       <Tile label="Urgent Items" value={overview.urgent} index={1} accent="var(--color-urgent)" />
       <Tile label="Avg Confidence" value={`${overview.avg_confidence}%`} index={2} />
-      <Tile label="Avg Severity" value={`${overview.avg_severity}/10`} index={3} />
+      {showSeverity && <Tile label="Avg Severity" value={`${overview.avg_severity}/10`} index={3} />}
     </div>
   )
 }

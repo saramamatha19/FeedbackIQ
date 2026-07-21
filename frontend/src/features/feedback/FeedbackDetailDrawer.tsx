@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useUiStore } from '@/store/uiStore'
 import { fetchFeedbackById, rerunFeedback } from '@/api/feedback'
+import { fetchFeedbackByIdAsAdmin } from '@/api/admin'
 import { formatDateTime } from '@/lib/formatters'
 import {
   BUSINESS_IMPACT_FILL,
@@ -35,12 +36,15 @@ function Meter({ label, fraction, color }: { label: string; fraction: number; co
 
 export function FeedbackDetailDrawer() {
   const selectedId = useUiStore((s) => s.selectedFeedbackId)
+  const scope = useUiStore((s) => s.selectedFeedbackScope)
   const close = useUiStore((s) => s.closeFeedbackDrawer)
   const queryClient = useQueryClient()
+  const isAdminScope = scope === 'admin'
 
   const { data: feedback, isLoading } = useQuery({
-    queryKey: ['feedback', selectedId],
-    queryFn: () => fetchFeedbackById(selectedId as string),
+    queryKey: ['feedback', scope, selectedId],
+    queryFn: () =>
+      isAdminScope ? fetchFeedbackByIdAsAdmin(selectedId as string) : fetchFeedbackById(selectedId as string),
     enabled: !!selectedId,
   })
 
@@ -142,9 +146,11 @@ export function FeedbackDetailDrawer() {
                   {prediction.processing_time_ms}ms
                 </div>
 
-                <Button variant="secondary" size="sm" onClick={() => rerun.mutate()} disabled={rerun.isPending}>
-                  {rerun.isPending ? 'Re-analyzing…' : '↻ Re-run AI analysis'}
-                </Button>
+                {!isAdminScope && (
+                  <Button variant="secondary" size="sm" onClick={() => rerun.mutate()} disabled={rerun.isPending}>
+                    {rerun.isPending ? 'Re-analyzing…' : '↻ Re-run AI analysis'}
+                  </Button>
+                )}
               </>
             ) : (
               <div className="text-sm text-[var(--color-ink-muted)]">Still processing…</div>

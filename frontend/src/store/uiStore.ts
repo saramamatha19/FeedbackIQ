@@ -2,12 +2,15 @@ import { create } from 'zustand'
 
 type Theme = 'light' | 'dark'
 
+type FeedbackScope = 'own' | 'admin'
+
 interface UiState {
   theme: Theme
   selectedFeedbackId: string | null
+  selectedFeedbackScope: FeedbackScope
   setTheme: (theme: Theme) => void
   toggleTheme: () => void
-  openFeedbackDrawer: (id: string) => void
+  openFeedbackDrawer: (id: string, scope?: FeedbackScope) => void
   closeFeedbackDrawer: () => void
 }
 
@@ -28,6 +31,7 @@ applyTheme(initialTheme)
 export const useUiStore = create<UiState>((set, get) => ({
   theme: initialTheme,
   selectedFeedbackId: null,
+  selectedFeedbackScope: 'own',
   setTheme: (theme) => {
     applyTheme(theme)
     set({ theme })
@@ -37,6 +41,6 @@ export const useUiStore = create<UiState>((set, get) => ({
     applyTheme(next)
     set({ theme: next })
   },
-  openFeedbackDrawer: (id) => set({ selectedFeedbackId: id }),
+  openFeedbackDrawer: (id, scope = 'own') => set({ selectedFeedbackId: id, selectedFeedbackScope: scope }),
   closeFeedbackDrawer: () => set({ selectedFeedbackId: null }),
 }))

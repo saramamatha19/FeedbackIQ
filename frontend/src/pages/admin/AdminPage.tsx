@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { fetchAdminDashboard, fetchAllUsers, fetchUsageStats } from '@/api/admin'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -65,7 +66,7 @@ export function AdminPage() {
       <div>
         <h2 className="mb-3 text-sm font-semibold">Feedback analysis (all users)</h2>
         <div className="space-y-6">
-          <KpiRow data={dashboard?.data} isLoading={dashboardLoading} />
+          <KpiRow data={dashboard?.data} isLoading={dashboardLoading} showSeverity={false} />
           <KeySignalsCard data={dashboard?.data} isLoading={dashboardLoading} />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <CategoryPieCard data={dashboard?.data} isLoading={dashboardLoading} />
@@ -85,8 +86,9 @@ export function AdminPage() {
         {usersLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : (
+          <div className="max-h-60 overflow-y-auto">
           <table className="w-full text-left text-sm">
-            <thead>
+            <thead className="sticky top-0 bg-[var(--color-surface)]">
               <tr className="border-b border-[var(--color-border)] text-xs text-[var(--color-ink-muted)]">
                 <th className="py-2 pr-3 font-medium">Email</th>
                 <th className="py-2 pr-3 font-medium">Name</th>
@@ -96,8 +98,15 @@ export function AdminPage() {
             </thead>
             <tbody>
               {users?.map((u) => (
-                <tr key={u.id} className="border-b border-[var(--color-border)] last:border-0">
-                  <td className="py-2.5 pr-3">{u.email}</td>
+                <tr
+                  key={u.id}
+                  className="border-b border-[var(--color-border)] last:border-0 hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  <td className="py-2.5 pr-3">
+                    <Link to={`/admin/users/${u.id}`} className="text-blue-600 hover:underline">
+                      {u.email}
+                    </Link>
+                  </td>
                   <td className="py-2.5 pr-3 text-[var(--color-ink-secondary)]">{u.full_name ?? '—'}</td>
                   <td className="py-2.5 pr-3">{u.role}</td>
                   <td className="py-2.5 text-xs text-[var(--color-ink-muted)]">{formatDate(u.created_at)}</td>
@@ -105,6 +114,7 @@ export function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </Card>
     </div>

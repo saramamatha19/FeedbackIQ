@@ -28,7 +28,7 @@ export function DashboardPage() {
         <p className="text-sm text-[var(--color-ink-muted)]">All-time overview across every upload.</p>
       </div>
 
-      <KpiRow data={data?.data} isLoading={isLoading} />
+      <KpiRow data={data?.data} isLoading={isLoading} showSeverity={false} />
 
       <Section delay={0.1}>
         <KeySignalsCard data={data?.data} isLoading={isLoading} />

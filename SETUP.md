@@ -71,8 +71,7 @@ Frontend runs at `http://localhost:5173`.
 1. Register an account at `/register`.
 2. Go to **Upload** → **CSV Upload** → upload `backend/eval/seed_feedback_dataset.csv`.
 3. Watch the 8-stage processing stepper, then view the **Dashboard**.
-4. Click any row in the feedback table to open the detail drawer.
-5. Try the search bar in the topbar: "show me urgent login bugs".
+4. Filter **Recent Feedback** by category/sentiment/urgency/theme, then click a row to open the detail drawer.
 
 ## Known limitations (intentional, see README for rationale)
 

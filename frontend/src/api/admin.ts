@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { DashboardData, Upload, User } from './types'
+import type { DashboardData, Feedback, Upload, User } from './types'
 
 export interface UsageStats {
   total_users: number
@@ -27,5 +27,20 @@ export async function fetchAllUploads() {
 
 export async function fetchAdminDashboard() {
   const res = await apiClient.get<{ data: DashboardData }>('/admin/dashboard')
+  return res.data
+}
+
+export async function fetchUserUploads(userId: string) {
+  const res = await apiClient.get<Upload[]>(`/admin/users/${userId}/uploads`)
+  return res.data
+}
+
+export async function fetchUserFeedback(userId: string) {
+  const res = await apiClient.get<Feedback[]>(`/admin/users/${userId}/feedback`, { params: { limit: 100 } })
+  return res.data
+}
+
+export async function fetchFeedbackByIdAsAdmin(feedbackId: string) {
+  const res = await apiClient.get<Feedback>(`/admin/feedback/${feedbackId}`)
   return res.data
 }

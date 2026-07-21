@@ -10,6 +10,7 @@ import { UploadPage } from '@/pages/upload/UploadPage'
 import { HistoryPage } from '@/pages/history/HistoryPage'
 import { UploadDetailPage } from '@/pages/history/UploadDetailPage'
 import { AdminPage } from '@/pages/admin/AdminPage'
+import { AdminUserDetailPage } from '@/pages/admin/AdminUserDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +38,10 @@ export const router = createBrowserRouter([
           },
           {
             element: <AdminRoute />,
-            children: [{ path: '/admin', element: <AdminPage /> }],
+            children: [
+              { path: '/admin', element: <AdminPage /> },
+              { path: '/admin/users/:userId', element: <AdminUserDetailPage /> },
+            ],
           },
         ],
       },

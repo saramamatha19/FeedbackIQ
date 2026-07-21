@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import clsx from 'clsx'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { NlSearchBar } from '@/features/search/NlSearchBar'
 import { FeedbackDetailDrawer } from '@/features/feedback/FeedbackDetailDrawer'
 import { useLogout, useMe } from '@/lib/useAuth'
 
@@ -45,7 +44,6 @@ export function AppLayout() {
             ))}
           </nav>
           <div className="flex-1" />
-          {!isAdmin && <NlSearchBar />}
           <ThemeToggle />
           <button
             onClick={() => logout.mutate()}
