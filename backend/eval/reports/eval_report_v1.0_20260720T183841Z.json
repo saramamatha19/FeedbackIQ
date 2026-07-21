@@ -1,0 +1,981 @@
+{
+  "prompt_version": "v1.0",
+  "generated_at": "2026-07-20T18:38:41.409431+00:00",
+  "dataset_size": 31,
+  "field_accuracy": {
+    "category": 0.839,
+    "sentiment": 0.968,
+    "theme": 0.839,
+    "urgency": 0.71,
+    "emotion": 0.871
+  },
+  "overall_exact_match_accuracy": 0.581,
+  "avg_confidence": 75.2,
+  "avg_confidence_when_all_fields_correct": 75.2,
+  "avg_confidence_when_any_field_wrong": 75.2,
+  "avg_processing_time_ms": 1090.1,
+  "fallback_rate": 0.0,
+  "per_item": [
+    {
+      "id": "typo_1",
+      "hard_case_type": "typo",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Search & Discovery",
+        "gold": "Search & Discovery",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": false
+    },
+    {
+      "id": "typo_2",
+      "hard_case_type": "typo",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Complaint",
+        "correct": false
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": false
+    },
+    {
+      "id": "typo_3",
+      "hard_case_type": "typo",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Performance & Speed",
+        "gold": "Performance & Speed",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 83,
+      "needs_human_review": false
+    },
+    {
+      "id": "emoji_1",
+      "hard_case_type": "emoji",
+      "category": {
+        "predicted": "Praise",
+        "gold": "Praise",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Positive",
+        "gold": "Positive",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Delight",
+        "gold": "Delight",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "emoji_2",
+      "hard_case_type": "emoji",
+      "category": {
+        "predicted": "Praise",
+        "gold": "Praise",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Positive",
+        "gold": "Positive",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Delight",
+        "gold": "Delight",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "emoji_3",
+      "hard_case_type": "emoji",
+      "category": {
+        "predicted": "Complaint",
+        "gold": "Complaint",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Other",
+        "correct": false
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Disappointment",
+        "gold": "Frustration",
+        "correct": false
+      },
+      "confidence": 75,
+      "needs_human_review": false
+    },
+    {
+      "id": "sarcasm_1",
+      "hard_case_type": "sarcasm",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Data Export/Import",
+        "gold": "Data Export/Import",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Medium",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 78,
+      "needs_human_review": false
+    },
+    {
+      "id": "sarcasm_2",
+      "hard_case_type": "sarcasm",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Search & Discovery",
+        "gold": "Search & Discovery",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Medium",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": false
+    },
+    {
+      "id": "sarcasm_3",
+      "hard_case_type": "sarcasm",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": false
+    },
+    {
+      "id": "mixed_lang_1",
+      "hard_case_type": "mixed_language",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Performance & Speed",
+        "gold": "Performance & Speed",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 85,
+      "needs_human_review": false
+    },
+    {
+      "id": "mixed_lang_2",
+      "hard_case_type": "mixed_language",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Data Export/Import",
+        "gold": "Data Export/Import",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": false
+    },
+    {
+      "id": "short_1",
+      "hard_case_type": "one_word",
+      "category": {
+        "predicted": "Complaint",
+        "gold": "Complaint",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Disappointment",
+        "gold": "Disappointment",
+        "correct": true
+      },
+      "confidence": 35,
+      "needs_human_review": true
+    },
+    {
+      "id": "short_2",
+      "hard_case_type": "one_word",
+      "category": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Neutral",
+        "gold": "Neutral",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Neutral",
+        "gold": "Neutral",
+        "correct": true
+      },
+      "confidence": 20,
+      "needs_human_review": true
+    },
+    {
+      "id": "long_1",
+      "hard_case_type": "long_rambling",
+      "category": {
+        "predicted": "Complaint",
+        "gold": "Bug",
+        "correct": false
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Search & Discovery",
+        "gold": "Search & Discovery",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 80,
+      "needs_human_review": true
+    },
+    {
+      "id": "long_2",
+      "hard_case_type": "long_rambling",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Data Export/Import",
+        "correct": false
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 85,
+      "needs_human_review": false
+    },
+    {
+      "id": "multi_1",
+      "hard_case_type": "multi_issue",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Login & Authentication",
+        "gold": "Login & Authentication",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 65,
+      "needs_human_review": true
+    },
+    {
+      "id": "multi_2",
+      "hard_case_type": "multi_issue",
+      "category": {
+        "predicted": "Feature Request",
+        "gold": "Bug",
+        "correct": false
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "UI/UX & Design",
+        "gold": "Performance & Speed",
+        "correct": false
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Medium",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 70,
+      "needs_human_review": true
+    },
+    {
+      "id": "multi_3",
+      "hard_case_type": "multi_issue",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Mixed",
+        "gold": "Mixed",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Medium",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Satisfaction",
+        "gold": "Frustration",
+        "correct": false
+      },
+      "confidence": 65,
+      "needs_human_review": true
+    },
+    {
+      "id": "ambiguous_1",
+      "hard_case_type": "ambiguous",
+      "category": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Neutral",
+        "gold": "Neutral",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Other",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Neutral",
+        "gold": "Neutral",
+        "correct": true
+      },
+      "confidence": 25,
+      "needs_human_review": true
+    },
+    {
+      "id": "ambiguous_2",
+      "hard_case_type": "ambiguous",
+      "category": {
+        "predicted": "Question",
+        "gold": "Bug",
+        "correct": false
+      },
+      "sentiment": {
+        "predicted": "Neutral",
+        "gold": "Negative",
+        "correct": false
+      },
+      "theme": {
+        "predicted": "Data Export/Import",
+        "gold": "Reporting & Analytics",
+        "correct": false
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Medium",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Confusion",
+        "gold": "Confusion",
+        "correct": true
+      },
+      "confidence": 60,
+      "needs_human_review": true
+    },
+    {
+      "id": "ambiguous_3",
+      "hard_case_type": "ambiguous",
+      "category": {
+        "predicted": "Other",
+        "gold": "Complaint",
+        "correct": false
+      },
+      "sentiment": {
+        "predicted": "Neutral",
+        "gold": "Neutral",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Other",
+        "gold": "Reporting & Analytics",
+        "correct": false
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Low",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Confusion",
+        "gold": "Confusion",
+        "correct": true
+      },
+      "confidence": 30,
+      "needs_human_review": true
+    },
+    {
+      "id": "dup_login_1",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Login & Authentication",
+        "gold": "Login & Authentication",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "dup_login_2",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Login & Authentication",
+        "gold": "Login & Authentication",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "dup_login_3",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Login & Authentication",
+        "gold": "Login & Authentication",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Critical",
+        "gold": "Critical",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Anger",
+        "correct": false
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "dup_crash_1",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Critical",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "dup_crash_2",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "Critical",
+        "correct": false
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Anger",
+        "correct": false
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "dup_crash_3",
+      "hard_case_type": "duplicate_cluster",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Reliability & Bugs",
+        "gold": "Reliability & Bugs",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Critical",
+        "gold": "Critical",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "contra_ui_1",
+      "hard_case_type": "contradiction_pair",
+      "category": {
+        "predicted": "Praise",
+        "gold": "Praise",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Positive",
+        "gold": "Positive",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "UI/UX & Design",
+        "gold": "UI/UX & Design",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Delight",
+        "gold": "Delight",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "contra_ui_2",
+      "hard_case_type": "contradiction_pair",
+      "category": {
+        "predicted": "Complaint",
+        "gold": "Complaint",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "UI/UX & Design",
+        "gold": "UI/UX & Design",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Medium",
+        "gold": "Medium",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 85,
+      "needs_human_review": true
+    },
+    {
+      "id": "contra_export_1",
+      "hard_case_type": "contradiction_pair",
+      "category": {
+        "predicted": "Praise",
+        "gold": "Praise",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Positive",
+        "gold": "Positive",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Data Export/Import",
+        "gold": "Data Export/Import",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "Low",
+        "gold": "Low",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Satisfaction",
+        "gold": "Satisfaction",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    },
+    {
+      "id": "contra_export_2",
+      "hard_case_type": "contradiction_pair",
+      "category": {
+        "predicted": "Bug",
+        "gold": "Bug",
+        "correct": true
+      },
+      "sentiment": {
+        "predicted": "Negative",
+        "gold": "Negative",
+        "correct": true
+      },
+      "theme": {
+        "predicted": "Data Export/Import",
+        "gold": "Data Export/Import",
+        "correct": true
+      },
+      "urgency": {
+        "predicted": "High",
+        "gold": "High",
+        "correct": true
+      },
+      "emotion": {
+        "predicted": "Frustration",
+        "gold": "Frustration",
+        "correct": true
+      },
+      "confidence": 90,
+      "needs_human_review": false
+    }
+  ]
+}

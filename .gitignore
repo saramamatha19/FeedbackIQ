@@ -1,0 +1,16 @@
+# Backend
+backend/.venv/
+backend/.env
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.egg-info/
+# Note: eval/reports/ is intentionally NOT ignored — the versioned eval reports
+# are a key deliverable demonstrating prompt-engineering iteration.
+
+# Frontend
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+
+# OS
+.DS_Store
