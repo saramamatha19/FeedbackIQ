@@ -30,7 +30,7 @@ export function UploadDetailPage() {
         )}
       </div>
 
-      <KpiRow data={dashboard?.data} isLoading={isLoading} />
+      <KpiRow data={dashboard?.data} isLoading={isLoading} showSeverity={false} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <CategoryPieCard data={dashboard?.data} isLoading={isLoading} />

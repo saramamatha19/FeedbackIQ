@@ -30,15 +30,6 @@ export const URGENCY_STYLES: Record<string, { color: string; label: string }> = 
   Critical: { color: 'var(--color-urgent)', label: 'Critical' },
 }
 
-export const SEVERITY_ORDER = ['Minor', 'Moderate', 'Major', 'Blocker']
-
-export const SEVERITY_FILL: Record<string, number> = {
-  Minor: 0.25,
-  Moderate: 0.5,
-  Major: 0.75,
-  Blocker: 1,
-}
-
 export const BUSINESS_IMPACT_FILL: Record<string, number> = {
   None: 0.1,
   Low: 0.35,

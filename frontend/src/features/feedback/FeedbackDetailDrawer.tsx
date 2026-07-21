@@ -14,7 +14,6 @@ import {
   CATEGORY_ICONS,
   EMOTION_EMOJI,
   SENTIMENT_COLORS,
-  SEVERITY_FILL,
   URGENCY_STYLES,
 } from '@/lib/constants'
 
@@ -104,11 +103,6 @@ export function FeedbackDetailDrawer() {
                 </div>
 
                 <div className="space-y-3">
-                  <Meter
-                    label={`Severity — ${prediction.severity}`}
-                    fraction={SEVERITY_FILL[prediction.severity] ?? 0.25}
-                    color="var(--color-accent)"
-                  />
                   <Meter
                     label={`Business Impact — ${prediction.business_impact}`}
                     fraction={BUSINESS_IMPACT_FILL[prediction.business_impact] ?? 0.1}
