@@ -85,11 +85,13 @@ def list_feedback(
     rows = feedback_repo.list_with_current_predictions(
         db, user_id=user.id, upload_id=upload_id, limit=limit, offset=offset
     )
+    labels = upload_repo.source_label_map(db, user.id)
     out = []
     for row in rows:
         current = next((p for p in row.predictions if p.is_current), None)
         item = FeedbackOut.model_validate(row)
         item.prediction = PredictionOut.model_validate(current) if current else None
+        item.source_label = labels.get(row.upload_id, "")
         out.append(item)
     return out
 

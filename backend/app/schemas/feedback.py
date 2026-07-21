@@ -36,6 +36,7 @@ class FeedbackOut(BaseModel):
     raw_text: str
     created_at: datetime.datetime
     prediction: PredictionOut | None = None
+    source_label: str = ""
 
     model_config = {"from_attributes": True}
 

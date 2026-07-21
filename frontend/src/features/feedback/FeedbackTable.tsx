@@ -129,6 +129,7 @@ export function FeedbackTable({
                 <th className="py-2 pr-3 font-medium">Sentiment</th>
                 <th className="py-2 pr-3 font-medium">Urgency</th>
                 <th className="py-2 pr-3 font-medium">Theme</th>
+                <th className="py-2 pr-3 font-medium">Source</th>
                 <th className="py-2 font-medium">Preview</th>
               </tr>
             </thead>
@@ -165,6 +166,7 @@ export function FeedbackTable({
                     )}
                   </td>
                   <td className="py-2.5 pr-3 text-xs">{row.prediction?.theme ?? '—'}</td>
+                  <td className="py-2.5 pr-3 text-xs text-[var(--color-ink-muted)]">{row.source_label || '—'}</td>
                   <td className="py-2.5 text-[var(--color-ink-secondary)]">
                     {truncate(row.raw_text, 60)} →
                   </td>

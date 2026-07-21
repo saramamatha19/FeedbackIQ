@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models.status_history import ProcessingStatusHistory
@@ -39,6 +39,13 @@ def list_for_user(db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: i
             .offset(offset)
         )
     )
+
+
+def source_label_map(db: Session, user_id: uuid.UUID) -> dict[uuid.UUID, str]:
+    """Maps each of the user's upload ids to an ordinal label like 'single_1', 'paste_2', 'csv_1'."""
+    row_number = func.row_number().over(partition_by=Upload.source_type, order_by=Upload.created_at).label("rn")
+    stmt = select(Upload.id, Upload.source_type, row_number).where(Upload.user_id == user_id)
+    return {row.id: f"{row.source_type}_{row.rn}" for row in db.execute(stmt)}
 
 
 def set_stage(db: Session, upload: Upload, *, stage: str, status: str, detail: str | None = None) -> None:

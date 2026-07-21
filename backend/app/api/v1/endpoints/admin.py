@@ -10,7 +10,7 @@ from app.db.models.prediction import AIPrediction
 from app.db.models.upload import Upload
 from app.db.models.user import User
 from app.db.session import get_db
-from app.repositories import feedback_repo, user_repo
+from app.repositories import feedback_repo, upload_repo, user_repo
 from app.schemas.auth import UserOut
 from app.schemas.feedback import FeedbackOut, PredictionOut
 from app.schemas.upload import UploadOut
@@ -97,11 +97,13 @@ def list_user_feedback(
     rows = feedback_repo.list_with_current_predictions(
         db, user_id=user_id, upload_id=upload_id, limit=limit, offset=offset
     )
+    labels = upload_repo.source_label_map(db, user_id)
     out = []
     for row in rows:
         current = next((p for p in row.predictions if p.is_current), None)
         item = FeedbackOut.model_validate(row)
         item.prediction = PredictionOut.model_validate(current) if current else None
+        item.source_label = labels.get(row.upload_id, "")
         out.append(item)
     return out
 

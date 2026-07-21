@@ -32,6 +32,7 @@ export interface Feedback {
   raw_text: string
   created_at: string
   prediction: Prediction | null
+  source_label: string
 }
 
 export interface Upload {
