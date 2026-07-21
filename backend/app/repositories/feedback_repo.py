@@ -19,10 +19,6 @@ def create_many(db: Session, *, upload_id: uuid.UUID, user_id: uuid.UUID, texts:
     return rows
 
 
-def set_cleaned_text(db: Session, feedback_id: uuid.UUID, cleaned_text: str) -> None:
-    db.query(Feedback).filter(Feedback.id == feedback_id).update({"cleaned_text": cleaned_text})
-
-
 def get(db: Session, feedback_id: uuid.UUID, user_id: uuid.UUID) -> Feedback | None:
     return db.scalar(
         select(Feedback).where(Feedback.id == feedback_id, Feedback.user_id == user_id)
