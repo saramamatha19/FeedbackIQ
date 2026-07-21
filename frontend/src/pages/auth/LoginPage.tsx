@@ -65,12 +65,14 @@ export function LoginPage() {
           {login.isPending ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
-      <p className="mt-4 text-center text-xs text-[var(--color-ink-muted)]">
-        No account?{' '}
-        <Link to="/register" className="font-medium text-blue-600 hover:underline">
-          Create one
-        </Link>
-      </p>
+      {role === 'user' && (
+        <p className="mt-4 text-center text-xs text-[var(--color-ink-muted)]">
+          No account?{' '}
+          <Link to="/register" className="font-medium text-blue-600 hover:underline">
+            Create one
+          </Link>
+        </p>
+      )}
     </Card>
   )
 }
