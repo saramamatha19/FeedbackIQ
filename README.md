@@ -1,6 +1,6 @@
 # FeedbackIQ
 
-**AI-powered customer feedback intelligence — from raw text to a searchable, categorized analytics dashboard.**
+**AI-powered customer feedback intelligence — from raw text to a categorized analytics dashboard.**
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](backend)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](backend)
@@ -13,8 +13,7 @@
 FeedbackIQ ingests customer feedback — a single note, a pasted batch, or a CSV/XLSX file of
 thousands of rows — and runs it through an AI pipeline that classifies **category, sentiment,
 emotion, theme, urgency, severity, business impact, and customer intent**. Results surface
-through a SaaS-style analytics dashboard with duplicate/contradiction detection and
-natural-language search.
+through a SaaS-style analytics dashboard with duplicate/contradiction detection.
 
 ---
 
@@ -30,8 +29,6 @@ natural-language search.
   uploads progress in real time.
 - **Duplicate & contradiction detection** — semantic, theme-aware duplicate grouping and
   same-theme/opposite-sentiment contradiction flags, without paying for embeddings.
-- **Natural-language search** — ask the dashboard a plain-English question; it's translated
-  into a safe, enum-constrained structured filter, never raw SQL.
 - **Analytics dashboard** — KPIs, sentiment/category/emotion breakdowns, top themes, a bug
   leaderboard, feature-request ranking, and an AI-generated "Key Signals" summary.
 - **Auth & roles** — cookie-based JWT auth, admin-approval gate on new signups, and a
@@ -73,8 +70,6 @@ flowchart LR
     PIPE --> DB
     DB --> DASH[Dashboard API]
     DASH --> FE[React Frontend]
-    FE -->|NL search| NLQ[nl_query_service]
-    NLQ -->|structured filter, never SQL| DB
 ```
 
 Each feedback row's AI result is stored in a **versioned** `ai_predictions` table (1:N from
@@ -89,14 +84,11 @@ prediction per row, so re-running AI analysis keeps full history instead of clob
   severity, business impact, theme, and intent are all correlated reads of the same text —
   one batched call (15 items) amortizes fixed per-call overhead instead of multiplying it.
 - **Closed-set theme taxonomy** (20 canonical themes + "Other"), not free generation, so
-  dashboard aggregation and NL-query filtering stay deterministic at scale.
+  dashboard aggregation stays deterministic at scale.
 - **Two-layer guardrails**: OpenAI `strict: true` structured-output schemas, independently
   re-validated against Pydantic models — a single point of failure can't silently corrupt data.
   One retry on malformed output, then a safe fallback (`category="Other"`,
   `needs_human_review=true`) with the raw response logged for review.
-- **NL search is not RAG.** The LLM only emits a structured, enum-constrained filter object;
-  `user_id` scoping is enforced unconditionally in code, so a prompt-injected query can never
-  leak cross-tenant data — the code is the safety boundary, the prompt is defense-in-depth.
 - **A real bug caught by testing, not just written and shipped**: the fuzzy duplicate
   pre-filter scored the project's own motivating example — *"Unable to login" / "Can't sign
   in" / "Login failed"* — too low to ever reach LLM confirmation. Fixed by sending every pair
@@ -162,8 +154,8 @@ backend/
     prompts/          versioned prompt modules (PROMPT_VERSION, few-shots, JSON schemas)
     db/models/         SQLAlchemy models, incl. the versioned ai_predictions schema
     services/           ai_service, pipeline_service, duplicate_service,
-                         contradiction_service, dashboard_service, nl_query_service
-    api/v1/endpoints/    auth, uploads, feedback, dashboard, nl_query, exports, admin
+                         contradiction_service, dashboard_service
+    api/v1/endpoints/    auth, uploads, feedback, dashboard, exports, admin
   eval/
     eval_dataset.json    31-item hand-labeled gold set
     run_eval.py          evaluation harness

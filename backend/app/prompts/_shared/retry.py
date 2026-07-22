@@ -1,7 +1,7 @@
 """
 Uniform retry/fallback wrapper used by every prompt module.
 
-Pattern (identical across classifier/split/duplicate/contradiction/summary/nlquery):
+Pattern (identical across classifier/split/duplicate/contradiction/summary):
   attempt 1 -> parse + validate
   on failure -> attempt 2 with a stricter system reminder appended
   on second failure -> caller-supplied safe-default fallback, flagged for review

@@ -3,7 +3,7 @@ Thin OpenAI client wrapper: loads prompt modules, issues structured-output
 calls, and applies the shared retry/fallback pattern from prompts/_shared/retry.py.
 
 This is the one place that talks to OpenAI — pipeline_service and the
-dedup/contradiction/summary/nlquery services all go through here, never
+dedup/contradiction/summary services all go through here, never
 call the SDK directly. Keeping this isolated is what makes prompt versioning
 and the eval harness able to swap models/prompts without touching callers.
 """
@@ -15,7 +15,7 @@ import time
 from openai import OpenAI
 
 from app.core.config import get_settings
-from app.prompts import classifier_prompt, duplicate_confirm_prompt, nlquery_prompt, split_prompt, summary_prompt
+from app.prompts import classifier_prompt, duplicate_confirm_prompt, split_prompt, summary_prompt
 from app.prompts._shared.canonical_themes import CANONICAL_THEMES
 from app.prompts._shared.retry import call_with_retry
 from app.prompts._shared.schemas import (
@@ -23,7 +23,6 @@ from app.prompts._shared.schemas import (
     ClassificationResult,
     DuplicateConfirmBatchResult,
     KeySignalsResult,
-    NLQueryFilter,
     SplitResult,
 )
 
@@ -236,27 +235,3 @@ def generate_key_signals(aggregate_stats: dict) -> list[dict]:
         logger.warning("generate_key_signals failed after %s attempts: %s", attempts, raw_failed)
         return _fallback_signals(aggregate_stats)
     return [s.model_dump() for s in result.signals]
-
-
-def translate_nl_query(query: str, *, today_iso: str) -> NLQueryFilter:
-    def call_fn(is_retry: bool) -> str:
-        messages = nlquery_prompt.build_messages(query, today_iso=today_iso, is_retry=is_retry)
-        response = _get_client().chat.completions.create(
-            model=settings.openai_model,
-            messages=messages,
-            response_format={"type": "json_schema", "json_schema": nlquery_prompt.JSON_SCHEMA},
-        )
-        return response.choices[0].message.content
-
-    def parse_and_validate(raw: str) -> NLQueryFilter:
-        return NLQueryFilter.model_validate_json(raw)
-
-    result, attempts, raw_failed = call_with_retry(
-        call_fn=call_fn,
-        parse_and_validate=parse_and_validate,
-        context_label="translate_nl_query",
-    )
-    if result is None:
-        logger.warning("translate_nl_query failed after %s attempts: %s", attempts, raw_failed)
-        return NLQueryFilter()  # empty filter = show everything, per the fallback design
-    return result

@@ -107,15 +107,3 @@ class KeySignal(BaseModel):
 
 class KeySignalsResult(BaseModel):
     signals: list[KeySignal] = Field(..., min_length=3, max_length=3)
-
-
-class NLQueryFilter(BaseModel):
-    themes: list[str] = Field(default_factory=list)
-    sentiments: list[str] = Field(default_factory=list)
-    urgencies: list[str] = Field(default_factory=list)
-    date_from: str | None = None
-    date_to: str | None = None
-    only_duplicates: bool = False
-    only_contradictions: bool = False
-    only_needs_review: bool = False
-    keyword: str | None = None
