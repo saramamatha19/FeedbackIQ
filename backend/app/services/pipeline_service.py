@@ -15,10 +15,17 @@ upload_id immediately; this module picks up from "Cleaning Data" onward.
 literal repeats before spending AI classification cost on them) — the
 semantic, theme-aware fuzzy+LLM dedup runs later, folded into "Extracting
 Themes" since it genuinely needs the themes classification just produced.
+
+Exact duplicates are classified once: only the first occurrence of each
+distinct cleaned_text is sent to the LLM. Every other occurrence gets its
+own AIPrediction row copied from that representative's result (no extra
+OpenAI calls) so it still counts in dashboard metrics and listings, while
+`is_duplicate_of` still records the relationship.
 """
 
 import logging
 import uuid
+from collections import defaultdict
 
 from sqlalchemy.orm import Session
 
@@ -88,12 +95,15 @@ def _run(db: Session, upload_id: uuid.UUID) -> None:
     upload_repo.set_stage(db, upload, stage="removing_duplicates", status="started")
     seen_text: dict[str, uuid.UUID] = {}
     unique_rows: list[Feedback] = []
+    exact_duplicates_by_representative: dict[uuid.UUID, list[uuid.UUID]] = defaultdict(list)
     for row in clean_rows:
         key = row.cleaned_text.lower().strip()
         if key in seen_text:
+            representative_id = seen_text[key]
             db.query(Feedback).filter(Feedback.id == row.id).update(
-                {"is_duplicate_of": seen_text[key]}
+                {"is_duplicate_of": representative_id}
             )
+            exact_duplicates_by_representative[representative_id].append(row.id)
         else:
             seen_text[key] = row.id
             unique_rows.append(row)
@@ -108,12 +118,14 @@ def _run(db: Session, upload_id: uuid.UUID) -> None:
     themes_by_id: dict[uuid.UUID, str] = {}
     sentiments_by_id: dict[uuid.UUID, str] = {}
     processed = 0
+    duplicates_backfilled = 0
     for batch_start in range(0, len(unique_rows), classifier_prompt.BATCH_SIZE):
         batch = unique_rows[batch_start : batch_start + classifier_prompt.BATCH_SIZE]
         call_items = [{"id": str(row.id), "text": row.cleaned_text} for row in batch]
         results = ai_service.classify_batch(call_items)
+        batch_backfilled = 0
         for row, (result, processing_ms, raw_failed) in zip(batch, results):
-            prediction_repo.save_prediction(
+            prediction = prediction_repo.save_prediction(
                 db,
                 feedback_id=row.id,
                 result=result,
@@ -125,8 +137,17 @@ def _run(db: Session, upload_id: uuid.UUID) -> None:
             themes_by_id[row.id] = result.theme
             sentiments_by_id[row.id] = result.sentiment
             processed += 1
-        upload_repo.increment_processed(db, upload, processed=len(batch))
-    upload_repo.set_stage(db, upload, stage="running_ai", status="completed", detail=f"classified={processed}")
+
+            for duplicate_id in exact_duplicates_by_representative.get(row.id, []):
+                prediction_repo.copy_prediction(db, source=prediction, feedback_id=duplicate_id)
+                batch_backfilled += 1
+
+        duplicates_backfilled += batch_backfilled
+        upload_repo.increment_processed(db, upload, processed=len(batch) + batch_backfilled)
+    upload_repo.set_stage(
+        db, upload, stage="running_ai", status="completed",
+        detail=f"classified={processed}, exact_duplicates_backfilled={duplicates_backfilled}",
+    )
 
     # --- Extracting Themes (theme-aware semantic dedup + contradiction detection) ---
     upload_repo.set_stage(db, upload, stage="extracting_themes", status="started")

@@ -42,6 +42,18 @@ def reject_user(user_id: uuid.UUID, db: Session = Depends(get_db), _admin: User 
     return user_repo.reject(db, user)
 
 
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(user_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    """Permanently removes a user and everything they own — works regardless of
+    approval status, so an admin can delete someone well after approving them."""
+    if user_id == admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account.")
+    user = user_repo.get(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user_repo.delete(db, user_id)
+
+
 @router.get("/usage")
 def usage_stats(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     total_users = db.scalar(select(func.count(User.id)))
@@ -71,15 +83,6 @@ def usage_stats(db: Session = Depends(get_db), _admin: User = Depends(require_ad
 @router.get("/dashboard")
 def admin_dashboard(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     return {"data": dashboard_service.build_admin_snapshot(db)}
-
-
-@router.get("/uploads", response_model=list[UploadOut])
-def list_all_uploads(
-    limit: int = 100, offset: int = 0, db: Session = Depends(get_db), _admin: User = Depends(require_admin)
-):
-    return list(
-        db.scalars(select(Upload).order_by(Upload.created_at.desc()).limit(limit).offset(offset))
-    )
 
 
 @router.get("/users/{user_id}/uploads", response_model=list[UploadOut])

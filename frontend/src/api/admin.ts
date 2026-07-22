@@ -20,11 +20,6 @@ export async function fetchAllUsers() {
   return res.data
 }
 
-export async function fetchAllUploads() {
-  const res = await apiClient.get<Upload[]>('/admin/uploads')
-  return res.data
-}
-
 export async function fetchAdminDashboard() {
   const res = await apiClient.get<{ data: DashboardData }>('/admin/dashboard')
   return res.data
@@ -53,6 +48,10 @@ export async function approveUser(userId: string) {
 export async function rejectUser(userId: string) {
   const res = await apiClient.post<User>(`/admin/users/${userId}/reject`)
   return res.data
+}
+
+export async function deleteUser(userId: string) {
+  await apiClient.delete(`/admin/users/${userId}`)
 }
 
 export async function deleteFeedbackAsAdmin(feedbackId: string) {

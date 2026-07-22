@@ -126,11 +126,3 @@ def rerun_feedback(feedback_id: uuid.UUID, db: Session = Depends(get_db), user: 
         raw_llm_response=raw_failed,
     )
     return prediction
-
-
-@router.get("/feedback/{feedback_id}/predictions/history", response_model=list[PredictionOut])
-def prediction_history(feedback_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    row = feedback_repo.get(db, feedback_id, user.id)
-    if row is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feedback not found")
-    return prediction_repo.history_for_feedback(db, feedback_id)

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { approveUser, fetchAdminDashboard, fetchAllUsers, fetchUsageStats, rejectUser } from '@/api/admin'
+import { approveUser, deleteUser, fetchAdminDashboard, fetchAllUsers, fetchUsageStats, rejectUser } from '@/api/admin'
 import { apiErrorMessage } from '@/api/client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatDate } from '@/lib/formatters'
+import { useMe } from '@/lib/useAuth'
 import { KpiRow } from '@/features/dashboard/KpiRow'
 import { KeySignalsCard } from '@/features/dashboard/KeySignalsCard'
 import { CategoryPieCard } from '@/features/dashboard/CategoryPieCard'
@@ -27,6 +28,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 
 export function AdminPage() {
   const queryClient = useQueryClient()
+  const { data: me } = useMe()
   const { data: usage, isLoading: usageLoading } = useQuery({
     queryKey: ['admin-usage'],
     queryFn: fetchUsageStats,
@@ -55,6 +57,16 @@ export function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (err) => toast.error(apiErrorMessage(err, 'Could not reject user.')),
+  })
+  const remove = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: () => {
+      toast.success('User deleted.')
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-usage'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not delete user.')),
   })
 
   return (
@@ -146,25 +158,44 @@ export function AdminPage() {
                     </td>
                     <td className="py-2.5 pr-3 text-xs text-[var(--color-ink-muted)]">{formatDate(u.created_at)}</td>
                     <td className="py-2.5">
-                      {pending && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            disabled={approve.isPending}
-                            onClick={() => approve.mutate(u.id)}
+                      <div className="flex gap-2">
+                        {pending && (
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={approve.isPending}
+                              onClick={() => approve.mutate(u.id)}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              disabled={reject.isPending}
+                              onClick={() => reject.mutate(u.id)}
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {u.id !== me?.id && (
+                          <button
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Permanently delete ${u.email}? This removes all of their uploads, feedback, and analysis. This cannot be undone.`,
+                                )
+                              ) {
+                                remove.mutate(u.id)
+                              }
+                            }}
+                            disabled={remove.isPending}
+                            className="text-xs font-medium text-red-500 hover:underline disabled:opacity-50"
                           >
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            disabled={reject.isPending}
-                            onClick={() => reject.mutate(u.id)}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      )}
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )

@@ -3,7 +3,10 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db.models.dashboard import DashboardSnapshot
+from app.db.models.upload import Upload
 from app.db.models.user import User
+from app.repositories import upload_repo
 
 
 def get_by_email(db: Session, email: str) -> User | None:
@@ -45,3 +48,17 @@ def reject(db: Session, user: User) -> User:
     db.commit()
     db.refresh(user)
     return user
+
+
+def delete(db: Session, user_id: uuid.UUID) -> None:
+    """Deletes a user and everything they own — their uploads (which cascades to
+    feedback/predictions/duplicate groups/contradictions/status history via
+    upload_repo.delete), their dashboard snapshots, and the user row itself.
+    Can be called on an approved/active user, not just a pending one."""
+    upload_ids = list(db.scalars(select(Upload.id).where(Upload.user_id == user_id)))
+    for upload_id in upload_ids:
+        upload_repo.delete(db, upload_id)
+
+    db.query(DashboardSnapshot).filter(DashboardSnapshot.user_id == user_id).delete(synchronize_session=False)
+    db.query(User).filter(User.id == user_id).delete(synchronize_session=False)
+    db.commit()

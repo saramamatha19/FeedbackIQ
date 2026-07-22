@@ -16,11 +16,6 @@ export async function rerunFeedback(feedbackId: string) {
   return res.data
 }
 
-export async function fetchPredictionHistory(feedbackId: string) {
-  const res = await apiClient.get<Prediction[]>(`/feedback/${feedbackId}/predictions/history`)
-  return res.data
-}
-
 export function exportFeedbackCsvUrl(uploadId?: string) {
   const base = `${apiClient.defaults.baseURL}/exports/feedback.csv`
   return uploadId ? `${base}?upload_id=${uploadId}` : base
