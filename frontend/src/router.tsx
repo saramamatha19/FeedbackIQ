@@ -11,6 +11,7 @@ import { HistoryPage } from '@/pages/history/HistoryPage'
 import { UploadDetailPage } from '@/pages/history/UploadDetailPage'
 import { AdminPage } from '@/pages/admin/AdminPage'
 import { AdminUserDetailPage } from '@/pages/admin/AdminUserDetailPage'
+import { ProfilePage } from '@/pages/profile/ProfilePage'
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: '/', element: <RoleHome /> },
+          { path: '/profile', element: <ProfilePage /> },
           {
             element: <UserRoute />,
             children: [

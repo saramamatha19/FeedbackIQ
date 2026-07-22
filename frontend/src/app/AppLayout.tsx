@@ -44,6 +44,18 @@ export function AppLayout() {
             ))}
           </nav>
           <div className="flex-1" />
+          <NavLink
+            to="/profile"
+            aria-label="Profile"
+            className={({ isActive }) =>
+              clsx(
+                'flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] text-base hover:bg-black/5 dark:hover:bg-white/10',
+                isActive && 'bg-blue-600/10 text-blue-600',
+              )
+            }
+          >
+            👤
+          </NavLink>
           <ThemeToggle />
           <button
             onClick={() => logout.mutate()}
