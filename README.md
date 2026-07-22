@@ -1,82 +1,115 @@
-# FeedbackIQ — AI Customer Feedback Intelligence Platform
+# FeedbackIQ
 
-FeedbackIQ ingests customer feedback (single entries, pasted batches, or CSV files of
-thousands of rows) and runs it through an AI pipeline that classifies category, sentiment,
-emotion, theme, urgency, severity, business impact, and intent — then surfaces it all through
-a SaaS-style analytics dashboard with natural-language search.
+**AI-powered customer feedback intelligence — from raw text to a searchable, categorized analytics dashboard.**
 
-See `SETUP.md` for how to run it. This document explains *why* it's built the way it is,
-since — per the project brief — prompt engineering is the primary evaluation criterion, with
-backend architecture, DB design, and UI/UX close behind.
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](backend)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](backend)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](frontend)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](frontend)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-database-4169E1?logo=postgresql&logoColor=white)](backend)
+[![OpenAI](https://img.shields.io/badge/OpenAI-structured%20outputs-412991?logo=openai&logoColor=white)](backend/app/prompts)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+FeedbackIQ ingests customer feedback — a single note, a pasted batch, or a CSV/XLSX file of
+thousands of rows — and runs it through an AI pipeline that classifies **category, sentiment,
+emotion, theme, urgency, severity, business impact, and customer intent**. Results surface
+through a SaaS-style analytics dashboard with duplicate/contradiction detection and
+natural-language search.
 
 ---
 
-## 1. Prompt Engineering (the primary graded surface)
+## Features
 
-All prompts live in `backend/app/prompts/`, each as a self-contained module with:
-`PROMPT_VERSION`, `REVISION_HISTORY`, `SYSTEM_PROMPT`, `FEWSHOT_EXAMPLES`, a strict
-`JSON_SCHEMA` for structured outputs, and a `build_messages()` builder.
+- **Flexible ingestion** — single entry, pasted multi-feedback blob, or CSV/XLSX upload of
+  thousands of rows, all going through the same classification pipeline.
+- **Rich AI classification** — one structured call per batch tags category, sentiment,
+  emotion, theme, urgency, severity, business impact, intent, a confidence score, an
+  explanation, and a suggested action.
+- **Live processing pipeline** — an animated 8-stage stepper (reading → cleaning → dedup →
+  AI classification → theming → summary → save → dashboard-ready) so users watch large
+  uploads progress in real time.
+- **Duplicate & contradiction detection** — semantic, theme-aware duplicate grouping and
+  same-theme/opposite-sentiment contradiction flags, without paying for embeddings.
+- **Natural-language search** — ask the dashboard a plain-English question; it's translated
+  into a safe, enum-constrained structured filter, never raw SQL.
+- **Analytics dashboard** — KPIs, sentiment/category/emotion breakdowns, top themes, a bug
+  leaderboard, feature-request ranking, and an AI-generated "Key Signals" summary.
+- **Auth & roles** — cookie-based JWT auth, admin-approval gate on new signups, and a
+  role-gated admin panel (usage stats, user approval, delete actions).
+- **Prompt evaluation harness** — a hand-labeled gold dataset and scored before/after reports
+  for every prompt revision (see [Evaluation](#evaluation) below).
 
-| Module | Purpose |
+---
+
+## Tech stack
+
+| Layer | Stack |
 |---|---|
-| `classifier_prompt.py` | The workhorse — one structured call classifies category/sentiment/emotion/theme/urgency/severity/business_impact/intent/confidence/explanation/suggested_action for a batch of up to 15 items |
-| `split_prompt.py` | Splits a pasted multi-feedback blob into individual verbatim items (bullets, numbered lists, blank-line paragraphs, or rambling prose) |
-| `duplicate_confirm_prompt.py` | Confirms whether a fuzzy-shortlisted pair is a true duplicate (same root complaint) vs. merely similar wording |
-| `summary_prompt.py` | Produces the dashboard's "This Week's Key Signals" — exactly 3 bullets, generated from pre-aggregated stats, never raw text |
-| `nlquery_prompt.py` | Translates a natural-language search query into a structured, enum-constrained filter |
-| `_shared/canonical_themes.py`, `_shared/schemas.py`, `_shared/retry.py` | Shared closed-set taxonomy, Pydantic re-validation models, and the uniform retry/fallback wrapper used by every module above |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4, Framer Motion, Recharts, TanStack Query, Zustand, React Router |
+| **Backend** | FastAPI, SQLAlchemy 2.0, Alembic, Pydantic v2, cookie-based JWT auth |
+| **Database** | PostgreSQL |
+| **AI** | OpenAI structured outputs (strict JSON schemas), versioned prompt modules with few-shot examples |
+| **Ingestion** | FastAPI `BackgroundTasks`, `openpyxl` (XLSX), `rapidfuzz` (fuzzy pre-filter) |
 
-### Key design decisions (and why)
+---
 
-- **One mega-prompt for classification, not N separate calls per field.** Category, sentiment,
-  emotion, urgency, severity, business impact, theme, and intent are all correlated reads of
-  the *same text* — splitting them into separate LLM calls would multiply the fixed per-call
-  overhead (system prompt + few-shot tokens) for zero accuracy gain, which matters at
-  "thousands of rows" scale. Batching 15 items per call amortizes that fixed cost further.
-- **Closed-set theme taxonomy (20 canonical themes + "Other"), not free generation.**
-  "Unable to login" / "Can't sign in" / "Login failed" need semantic collapsing an LLM is good
-  at, but the *output vocabulary* must stay fixed for dashboard aggregation and NL-query
-  filtering to work deterministically. Free generation would cause theme explosion at scale.
-- **Guardrails**: every categorical field is an explicit enum in an OpenAI structured-output
-  schema (`strict: true`), independently re-validated against Pydantic models in code — two
-  layers, so a single point of failure (SDK drift, model misbehavior) can't silently corrupt
-  data.
-- **Retry/error-recovery**: one retry with a stricter system reminder on malformed JSON or
-  enum violations, then a safe-default fallback (`category="Other"`, `confidence=0`,
-  `needs_human_review=true`) with the raw failed response logged. Low confidence alone never
-  triggers a retry — it's a valid signal (ambiguous/sarcastic/short input), not an error.
-- **Duplicate detection without embeddings**: theme-grouping does the real cost-cutting
-  (O(n²) over a whole batch → O(k²) per theme, k usually small); within a normal-sized theme
-  bucket, *every* pair goes to the LLM confirmation rather than being pre-filtered on lexical
-  similarity, because true duplicates are frequently worded completely differently. A cheap
-  fuzzy filter is only applied as a last-resort cost cap for pathologically large theme
-  buckets. (This exact issue was caught during live testing — see §4.)
-- **Contradiction detection**: ships as a zero-LLM-cost heuristic (same theme + opposite
-  sentiment) for the MVP, per the explicit scope decision below.
-- **NL search is not RAG.** The LLM never sees or produces SQL — it emits a structured,
-  enum-constrained filter object, which `nl_query_service.py` translates into a parameterized
-  SQLAlchemy query via a hand-written field/operator allowlist. `user_id` scoping is applied
-  in code, unconditionally, so the LLM's output can never leak cross-tenant data even if it
-  ignored every instruction in the prompt. This is the actual safety boundary — the prompt is
-  defense-in-depth, not the guarantee.
+## Architecture
 
-### Evaluation
+```mermaid
+flowchart LR
+    U[User] -->|single / paste / CSV / XLSX| API[FastAPI]
+    API -->|sync: parse + persist rows| DB[(PostgreSQL)]
+    API -->|schedule| PIPE[Pipeline BackgroundTask]
 
-`backend/eval/eval_dataset.json` is a 31-item hand-labeled gold set deliberately covering
-typos, emoji, sarcasm, mixed-language/code-switched text, one-word input, long rambling
-multi-topic feedback, bundled multi-issue feedback, ambiguous/vague feedback, a 2-cluster
-duplicate set, and a 2-pair contradiction set. `backend/eval/run_eval.py` runs it against the
-live classifier and produces a timestamped JSON + Markdown report.
+    subgraph PIPE[8-Stage Pipeline]
+        direction TB
+        S1[Clean text] --> S2[Remove exact duplicates]
+        S2 --> S3[Classify via OpenAI]
+        S3 --> S4[Theme-aware dedup + contradictions]
+        S4 --> S5[Generate summary]
+        S5 --> S6[Refresh dashboard snapshot]
+    end
 
-**Real before/after, not a hypothetical**: the v1.0 baseline run scored 71% on urgency
-(vs. 84–97% on other fields), because the model routinely under-called severe cases
-("High" instead of "Critical" for crash+data-loss reports) — see
-`backend/eval/reports/eval_report_v1.0_20260720T183841Z.md`. That's a genuine
-weakness surfaced by the eval harness, not a contrived example. In response, `classifier_prompt.py`
-was bumped to v1.1 with an explicit urgency decision rule tied to the spec's own named
-critical examples (crash, data loss, payment failure, cannot login, account locked) and a new
-few-shot demonstrating it. Re-running the eval
-(`backend/eval/reports/eval_report_v1.1_20260720T184034Z.md`) showed:
+    PIPE --> DB
+    DB --> DASH[Dashboard API]
+    DASH --> FE[React Frontend]
+    FE -->|NL search| NLQ[nl_query_service]
+    NLQ -->|structured filter, never SQL| DB
+```
+
+Each feedback row's AI result is stored in a **versioned** `ai_predictions` table (1:N from
+`feedback`, never overwritten) — a partial unique index guarantees exactly one active
+prediction per row, so re-running AI analysis keeps full history instead of clobbering it.
+
+---
+
+## Engineering highlights
+
+- **One structured call, not N calls per field.** Category, sentiment, emotion, urgency,
+  severity, business impact, theme, and intent are all correlated reads of the same text —
+  one batched call (15 items) amortizes fixed per-call overhead instead of multiplying it.
+- **Closed-set theme taxonomy** (20 canonical themes + "Other"), not free generation, so
+  dashboard aggregation and NL-query filtering stay deterministic at scale.
+- **Two-layer guardrails**: OpenAI `strict: true` structured-output schemas, independently
+  re-validated against Pydantic models — a single point of failure can't silently corrupt data.
+  One retry on malformed output, then a safe fallback (`category="Other"`,
+  `needs_human_review=true`) with the raw response logged for review.
+- **NL search is not RAG.** The LLM only emits a structured, enum-constrained filter object;
+  `user_id` scoping is enforced unconditionally in code, so a prompt-injected query can never
+  leak cross-tenant data — the code is the safety boundary, the prompt is defense-in-depth.
+- **A real bug caught by testing, not just written and shipped**: the fuzzy duplicate
+  pre-filter scored the project's own motivating example — *"Unable to login" / "Can't sign
+  in" / "Login failed"* — too low to ever reach LLM confirmation. Fixed by sending every pair
+  within a theme bucket straight to the LLM, since theme-grouping already does the real
+  cost-cutting (see `duplicate_service.py`).
+
+## Evaluation
+
+`backend/eval/` ships a 31-item hand-labeled gold set covering typos, emoji, sarcasm,
+code-switched text, rambling multi-topic feedback, and duplicate/contradiction clusters, plus
+a harness (`run_eval.py`) that scores the live classifier and writes a timestamped report.
+
+Real before/after from a prompt revision, not a hypothetical:
 
 | Field | v1.0 | v1.1 |
 |---|---|---|
@@ -86,89 +119,50 @@ few-shot demonstrating it. Re-running the eval
 | Urgency | 71.0% | **80.6%** |
 | Emotion | 87.1% | 90.3% |
 
-Theme dipped slightly — reported as-is rather than cherry-picked, since a 31-item eval set is
-small enough that some movement is noise. The confidence-calibration metric in both reports
-(avg confidence, correct vs. incorrect) also honestly shows the model's self-reported
-confidence isn't yet strongly discriminating on this sample size — a known limitation, not
-hidden.
+The v1.0 baseline under-called severity on crash/data-loss reports (71% on urgency); v1.1
+added an explicit urgency decision rule and a new few-shot example, fixing the gap. Reported
+as-is, including the small theme regression — a 31-item set is small enough that some
+movement is noise.
 
 ---
 
-## 2. Architecture
+## Getting started
 
-**Backend**: FastAPI + SQLAlchemy + Alembic + PostgreSQL (local install, no Docker),
-repository-pattern data access, service-layer business logic, cookie-based JWT auth.
+Full setup (database, backend, frontend, admin promotion, running the eval) is in
+**[SETUP.md](SETUP.md)**. Quick version:
 
-**The one schema decision worth calling out**: `ai_predictions` is versioned (1:N from
-`feedback`), not overwritten in place. A partial unique index
-(`UNIQUE(feedback_id) WHERE is_current = true`) enforces exactly one active prediction per
-feedback row at the database level. Re-running AI analysis inserts a new row and flips the
-old one's flag in the same transaction — this is what makes "re-run AI analysis" and
-"prediction history" real, auditable features instead of a lossy overwrite, and it's what lets
-the eval harness's before/after comparison mean something at the data layer too.
+```bash
+# Database
+psql -U postgres -c "CREATE ROLE feedbackiq LOGIN PASSWORD 'feedbackiq';"
+psql -U postgres -c "CREATE DATABASE feedbackiq OWNER feedbackiq;"
 
-**Async ingestion**: CSV/paste uploads run through FastAPI `BackgroundTasks` (not
-Celery/Redis) with a bounded async batch size — the right tradeoff for a single-instance,
-no-Docker deployment; documented as the explicit production upgrade path in `SETUP.md`.
+# Backend
+cd backend && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # set DATABASE_URL, OPENAI_API_KEY, JWT_SECRET
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 
-**Frontend**: React + Vite + TypeScript + Tailwind v4 + Framer Motion + Recharts + TanStack
-Query + Zustand + React Router. Auth token is an httpOnly cookie (not localStorage) —
-immune to XSS-based token theft, which matters more than the CSRF exposure it introduces for
-a same-origin app.
+# Frontend
+cd frontend && npm install
+cp .env.example .env   # VITE_API_BASE_URL=http://localhost:8000/api/v1
+npm run dev
+```
 
----
-
-## 3. What's scoped down (and why)
-
-Per the "few days, depth over breadth" build priority, these are deliberately minimal:
-
-- **Contradiction detection** ships as the heuristic baseline only (see above) — the
-  LLM-confirmation layer described in the design doc is a documented stretch goal.
-- **Admin panel** is read-only (usage stats + user list), no user management actions.
-- **Exports** are CSV only.
-- **Background jobs** are in-process, not a distributed queue.
-- **Dedup/contradiction** are scoped within a single upload batch, not cross-batch/all-time.
-
-None of these cuts touch the graded core: prompt versioning discipline, few-shot coverage of
-every named hard case, guardrails + retry logic, the eval report, the dashboard, the upload
-flow with its animated 8-stage pipeline, the feedback detail drawer, or dark/light mode — all
-verified working end-to-end against a live Postgres database and the OpenAI API (see below).
+Then register at `/register`, upload `backend/eval/seed_feedback_dataset.csv` from the
+**Upload** page, and watch it flow through the dashboard.
 
 ---
 
-## 4. What was actually verified (not just written)
-
-Every layer of this system was exercised against live infrastructure during development, not
-just type-checked:
-
-- Auth: register → cookie set → `/me` → logout → re-auth rejected, against real Postgres.
-- Single/paste/CSV ingestion, the full 8-stage pipeline, and duplicate/contradiction detection
-  — run against the real OpenAI API, not mocked.
-- **A real bug was caught and fixed via this testing**: the fuzzy duplicate pre-filter
-  (`rapidfuzz.token_sort_ratio ≥ 70`) scored the spec's own motivating example — "Unable to
-  login" / "Can't sign in" / "Login failed" — at only 40–44, meaning it never reached the LLM
-  confirmation step at all. Fixed by sending every pair within a normal-sized theme bucket to
-  the LLM directly (see `duplicate_service.py`), since theme-grouping already does the real
-  cost-cutting.
-- The frontend was driven with a headless-Chromium script through the full login → dashboard →
-  upload → CSV processing → dashboard → feedback-drawer flow, in both light and dark mode,
-  with zero console errors. This also caught and fixed two real UI bugs: category-breakdown
-  pie labels were clipped/unreadable (fixed with a proper legend), and "Praise" and "Feature
-  Request" shared the same color in the categorical palette (fixed by giving each category a
-  distinct color) — exactly the kind of "never rely on color alone" defect that's easy to miss
-  without actually looking at a rendered screenshot.
-
----
-
-## 5. Project Layout
+## Project layout
 
 ```
 backend/
   app/
-    prompts/          versioned prompt modules (the core graded artifact)
-    db/models/         SQLAlchemy models incl. the versioned ai_predictions schema
-    services/           ai_service (OpenAI client), pipeline_service (8-stage orchestration),
-                         duplicate_service, contradiction_service, dashboard_service, nl_query_service
+    prompts/          versioned prompt modules (PROMPT_VERSION, few-shots, JSON schemas)
+    db/models/         SQLAlchemy models, incl. the versioned ai_predictions schema
+    services/           ai_service, pipeline_service, duplicate_service,
+                         contradiction_service, dashboard_service, nl_query_service
     api/v1/endpoints/    auth, uploads, feedback, dashboard, nl_query, exports, admin
   eval/
     eval_dataset.json    31-item hand-labeled gold set
@@ -177,7 +171,24 @@ backend/
     seed_feedback_dataset.csv   135-row realistic demo dataset
 frontend/
   src/
-    features/            dashboard, upload, feedback, search — feature-scoped components
+    features/            dashboard, upload, feedback, admin — feature-scoped components
     pages/                route-level pages
     api/                  typed API client
 ```
+
+---
+
+## Roadmap / known limitations
+
+- Contradiction detection is a zero-LLM heuristic (same theme + opposite sentiment); an
+  LLM-confirmation layer is a planned enhancement.
+- Admin user management covers approval and delete actions; role changes and deactivation
+  are not yet built.
+- Exports are CSV only.
+- Background jobs run in-process (FastAPI `BackgroundTasks`); a distributed queue
+  (Celery/Redis) is the natural upgrade for multi-instance deployment.
+- Dedup/contradiction detection is scoped within a single upload batch, not cross-batch/all-time.
+
+## License
+
+[MIT](LICENSE)

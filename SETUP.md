@@ -80,4 +80,5 @@ Frontend runs at `http://localhost:5173`.
 - Exports are CSV only.
 - Contradiction detection is a heuristic baseline (same theme + opposite sentiment), not
   LLM-confirmed.
-- Admin panel is read-only (stats + user list), no user management actions.
+- Admin panel covers usage stats, user approval, and delete actions; role changes and
+  deactivation are not yet built.
