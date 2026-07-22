@@ -6,6 +6,7 @@ N-member groups. No embeddings/vector search anywhere in this path.
 """
 
 import itertools
+import logging
 import uuid
 from collections import defaultdict
 
@@ -16,9 +17,12 @@ from app.db.models.duplicate import DuplicateGroup, DuplicateGroupMember
 from app.db.models.feedback import Feedback
 from app.services import ai_service
 
-FUZZY_SHORTLIST_THRESHOLD = 35
+logger = logging.getLogger(__name__)
+
+FUZZY_SHORTLIST_THRESHOLD = 60
 THEME_BUCKET_ALL_PAIRS_CAP = 30
 CONFIRM_BATCH_SIZE = 15
+MAX_CANDIDATE_PAIRS_PER_UPLOAD = 300
 
 
 class _UnionFind:
@@ -85,6 +89,13 @@ def run_duplicate_detection(
     candidate_pairs = _shortlist_candidate_pairs(feedback_by_theme)
     if not candidate_pairs:
         return 0
+
+    if len(candidate_pairs) > MAX_CANDIDATE_PAIRS_PER_UPLOAD:
+        logger.warning(
+            "Upload %s: %d candidate duplicate pairs exceeds cap of %d — confirming only the first %d.",
+            upload_id, len(candidate_pairs), MAX_CANDIDATE_PAIRS_PER_UPLOAD, MAX_CANDIDATE_PAIRS_PER_UPLOAD,
+        )
+        candidate_pairs = candidate_pairs[:MAX_CANDIDATE_PAIRS_PER_UPLOAD]
 
     confirmed_pairs: list[tuple[uuid.UUID, uuid.UUID]] = []
     for batch_start in range(0, len(candidate_pairs), CONFIRM_BATCH_SIZE):

@@ -20,17 +20,24 @@ async def upload_csv(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    if not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Please upload a .csv file.")
+    filename = file.filename.lower()
+    if filename.endswith(".csv"):
+        source_type = "csv"
+        parse = ingestion_service.parse_csv
+    elif filename.endswith(".xlsx"):
+        source_type = "xlsx"
+        parse = ingestion_service.parse_xlsx
+    else:
+        raise HTTPException(status_code=400, detail="Please upload a .csv or .xlsx file.")
 
     file_bytes = await file.read()
     try:
-        texts = ingestion_service.parse_csv(file_bytes)
-    except ingestion_service.InvalidCSVError as exc:
+        texts = parse(file_bytes)
+    except ingestion_service.InvalidFileError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     upload = upload_repo.create(
-        db, user_id=user.id, source_type="csv", original_filename=file.filename, total_rows=len(texts)
+        db, user_id=user.id, source_type=source_type, original_filename=file.filename, total_rows=len(texts)
     )
     upload_repo.set_stage(db, upload, stage="reading_file", status="completed", detail=f"rows={len(texts)}")
     feedback_repo.create_many(db, upload_id=upload.id, user_id=user.id, texts=texts)

@@ -14,14 +14,14 @@ if TYPE_CHECKING:
 
 
 class Upload(UUIDPrimaryKeyMixin, TimestampMixin, Base):
-    """One analysis session: a single feedback submission, a pasted batch, or a CSV file."""
+    """One analysis session: a single feedback submission, a pasted batch, or an uploaded file."""
 
     __tablename__ = "uploads"
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
-    source_type: Mapped[str] = mapped_column(String(20), nullable=False)  # single | paste | csv
+    source_type: Mapped[str] = mapped_column(String(20), nullable=False)  # single | paste | csv | xlsx
     original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

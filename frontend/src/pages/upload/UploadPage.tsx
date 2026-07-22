@@ -9,7 +9,7 @@ import { ProcessingStepper } from '@/features/upload/ProcessingStepper'
 const TABS = [
   { key: 'single', label: 'Single' },
   { key: 'paste', label: 'Paste Multiple' },
-  { key: 'csv', label: 'CSV Upload' },
+  { key: 'csv', label: 'File Upload' },
 ] as const
 
 type TabKey = (typeof TABS)[number]['key']

@@ -23,7 +23,7 @@ export function CsvDropzone({ onSubmitted }: { onSubmitted: (uploadId: string) =
       setFile(null)
       onSubmitted(upload.id)
     },
-    onError: (err) => toast.error(apiErrorMessage(err, 'Could not process CSV.')),
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not process file.')),
   })
 
   function rejectWith(message: string) {
@@ -33,8 +33,9 @@ export function CsvDropzone({ onSubmitted }: { onSubmitted: (uploadId: string) =
   }
 
   function validateAndSet(candidate: File) {
-    if (!candidate.name.toLowerCase().endsWith('.csv')) {
-      rejectWith('⚠ Only .csv files are supported.')
+    const name = candidate.name.toLowerCase()
+    if (!name.endsWith('.csv') && !name.endsWith('.xlsx')) {
+      rejectWith('⚠ Only .csv or .xlsx files are supported.')
       return
     }
     if (candidate.size > MAX_SIZE_BYTES) {
@@ -72,14 +73,14 @@ export function CsvDropzone({ onSubmitted }: { onSubmitted: (uploadId: string) =
           )}
         >
           <div className="text-3xl">⬆️</div>
-          <div className="text-sm font-medium">Drag & drop your .csv here, or click to browse</div>
+          <div className="text-sm font-medium">Drag & drop your .csv or .xlsx here, or click to browse</div>
           <div className="text-xs text-[var(--color-ink-muted)]">
             Must include a "feedback" text column · max 5MB
           </div>
           <input
             ref={inputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx"
             className="hidden"
             onChange={(e) => {
               const selected = e.target.files?.[0]
