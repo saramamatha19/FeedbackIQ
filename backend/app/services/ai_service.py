@@ -121,9 +121,13 @@ def split_feedback_blob(raw_blob: str) -> list[str]:
         if not parsed.items:
             raise ValueError("split returned zero items")
         for split_item in parsed.items:
-            # containment guardrail: reject fabricated text not actually present in the blob
+            # containment guardrail: reject fabricated text not actually present in the blob.
+            # autojunk=False is required — its default True treats frequent characters (e.g.
+            # spaces, once raw_blob exceeds ~200 chars) as "popular"/junk and fragments the
+            # match, making find_longest_match report a tiny size even for a fully-contained,
+            # verbatim substring.
             ratio = difflib.SequenceMatcher(
-                None, split_item.text.lower(), raw_blob.lower()
+                None, split_item.text.lower(), raw_blob.lower(), autojunk=False
             ).find_longest_match(0, len(split_item.text), 0, len(raw_blob)).size
             if ratio < len(split_item.text) * 0.7:
                 raise ValueError(f"split item not substantially contained in source: {split_item.text[:40]!r}")
