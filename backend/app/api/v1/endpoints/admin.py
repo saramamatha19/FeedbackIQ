@@ -26,6 +26,22 @@ def list_users(
     return user_repo.list_all(db, limit=limit, offset=offset)
 
 
+@router.post("/users/{user_id}/approve", response_model=UserOut)
+def approve_user(user_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    user = user_repo.get(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user_repo.approve(db, user)
+
+
+@router.post("/users/{user_id}/reject", response_model=UserOut)
+def reject_user(user_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    user = user_repo.get(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user_repo.reject(db, user)
+
+
 @router.get("/usage")
 def usage_stats(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
     total_users = db.scalar(select(func.count(User.id)))
@@ -117,3 +133,24 @@ def get_any_feedback(feedback_id: uuid.UUID, db: Session = Depends(get_db), _adm
     item = FeedbackOut.model_validate(row)
     item.prediction = PredictionOut.model_validate(current) if current else None
     return item
+
+
+@router.delete("/feedback/{feedback_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_feedback(feedback_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    row = db.get(Feedback, feedback_id)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feedback not found")
+    user_id, upload_id = row.user_id, row.upload_id
+    feedback_repo.delete(db, feedback_id)
+    dashboard_service.refresh_snapshot(db, user_id=user_id, upload_id=upload_id)
+    dashboard_service.refresh_snapshot(db, user_id=user_id, upload_id=None)
+
+
+@router.delete("/uploads/{upload_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_upload(upload_id: uuid.UUID, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    upload = db.get(Upload, upload_id)
+    if upload is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload not found")
+    user_id = upload.user_id
+    upload_repo.delete(db, upload_id)
+    dashboard_service.refresh_snapshot(db, user_id=user_id, upload_id=None)

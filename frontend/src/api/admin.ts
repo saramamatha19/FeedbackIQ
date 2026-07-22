@@ -44,3 +44,21 @@ export async function fetchFeedbackByIdAsAdmin(feedbackId: string) {
   const res = await apiClient.get<Feedback>(`/admin/feedback/${feedbackId}`)
   return res.data
 }
+
+export async function approveUser(userId: string) {
+  const res = await apiClient.post<User>(`/admin/users/${userId}/approve`)
+  return res.data
+}
+
+export async function rejectUser(userId: string) {
+  const res = await apiClient.post<User>(`/admin/users/${userId}/reject`)
+  return res.data
+}
+
+export async function deleteFeedbackAsAdmin(feedbackId: string) {
+  await apiClient.delete(`/admin/feedback/${feedbackId}`)
+}
+
+export async function deleteUploadAsAdmin(uploadId: string) {
+  await apiClient.delete(`/admin/uploads/${uploadId}`)
+}

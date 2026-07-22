@@ -25,12 +25,12 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 
 @router.post("/register", response_model=UserOut, status_code=201)
-def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)):
-    user = auth_service.register_user(
+def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+    # No auth cookie is issued here — the account is pending admin approval and
+    # cannot log in yet (see auth_service.authenticate_user).
+    return auth_service.register_user(
         db, email=payload.email, password=payload.password, full_name=payload.full_name
     )
-    _set_auth_cookie(response, auth_service.issue_token_for(user))
-    return user
 
 
 @router.post("/login", response_model=UserOut)

@@ -1,8 +1,10 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, joinedload
 
+from app.db.models.contradiction import ContradictionPair
+from app.db.models.duplicate import DuplicateGroup, DuplicateGroupMember
 from app.db.models.feedback import Feedback
 from app.db.models.prediction import AIPrediction
 
@@ -56,3 +58,41 @@ def list_with_current_predictions(
     if upload_id is not None:
         stmt = stmt.where(Feedback.upload_id == upload_id)
     return list(db.scalars(stmt).unique())
+
+
+def delete(db: Session, feedback_id: uuid.UUID) -> None:
+    """Deletes one feedback row and everything that references it (predictions,
+    contradiction pairs, duplicate-group membership) so no FK is left dangling."""
+    db.query(AIPrediction).filter(AIPrediction.feedback_id == feedback_id).delete(synchronize_session=False)
+    db.query(ContradictionPair).filter(
+        or_(ContradictionPair.feedback_id_a == feedback_id, ContradictionPair.feedback_id_b == feedback_id)
+    ).delete(synchronize_session=False)
+    db.query(Feedback).filter(Feedback.is_duplicate_of == feedback_id).update(
+        {"is_duplicate_of": None}, synchronize_session=False
+    )
+
+    affected_group_ids = list(
+        db.scalars(select(DuplicateGroupMember.group_id).where(DuplicateGroupMember.feedback_id == feedback_id))
+    )
+    db.query(DuplicateGroupMember).filter(DuplicateGroupMember.feedback_id == feedback_id).delete(
+        synchronize_session=False
+    )
+    for group_id in affected_group_ids:
+        remaining_member_ids = list(
+            db.scalars(select(DuplicateGroupMember.feedback_id).where(DuplicateGroupMember.group_id == group_id))
+        )
+        if len(remaining_member_ids) < 2:
+            # Bulk delete, not db.delete(group) — an ORM-tracked delete only flushes at
+            # commit, which would run after the raw Feedback delete below and violate
+            # the representative_feedback_id FK. Bulk statements execute immediately.
+            db.query(DuplicateGroupMember).filter(DuplicateGroupMember.group_id == group_id).delete(
+                synchronize_session=False
+            )
+            db.query(DuplicateGroup).filter(DuplicateGroup.id == group_id).delete(synchronize_session=False)
+        else:
+            db.query(DuplicateGroup).filter(
+                DuplicateGroup.id == group_id, DuplicateGroup.representative_feedback_id == feedback_id
+            ).update({"representative_feedback_id": remaining_member_ids[0]}, synchronize_session=False)
+
+    db.query(Feedback).filter(Feedback.id == feedback_id).delete(synchronize_session=False)
+    db.commit()

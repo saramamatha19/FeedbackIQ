@@ -3,6 +3,8 @@ export interface User {
   email: string
   full_name: string | null
   role: string
+  is_active: boolean
+  is_approved: boolean
   created_at: string
 }
 
@@ -37,7 +39,7 @@ export interface Feedback {
 
 export interface Upload {
   id: string
-  source_type: 'single' | 'paste' | 'csv'
+  source_type: 'single' | 'paste' | 'csv' | 'xlsx'
   original_filename: string | null
   display_name: string | null
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'partial'

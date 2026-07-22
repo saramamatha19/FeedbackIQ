@@ -15,7 +15,7 @@ const STATUS_COLOR: Record<string, string> = {
   partial: 'text-amber-500',
 }
 
-const SOURCE_LABEL: Record<string, string> = { single: 'Single', paste: 'Paste', csv: 'CSV' }
+const SOURCE_LABEL: Record<string, string> = { single: 'Single', paste: 'Paste', csv: 'CSV', xlsx: 'Excel' }
 
 export function HistoryPage() {
   const { data, isLoading } = useQuery({ queryKey: ['uploads'], queryFn: () => fetchUploads() })

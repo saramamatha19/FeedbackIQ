@@ -14,7 +14,7 @@ def register_user(db: Session, *, email: str, password: str, full_name: str | No
             status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists"
         )
     return user_repo.create(
-        db, email=email, hashed_password=hash_password(password), full_name=full_name
+        db, email=email, hashed_password=hash_password(password), full_name=full_name, is_approved=False
     )
 
 
@@ -26,6 +26,10 @@ def authenticate_user(db: Session, *, email: str, password: str) -> User:
         )
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is disabled")
+    if user.role != "admin" and not user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Your account is pending admin approval."
+        )
     user.last_login_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
     return user

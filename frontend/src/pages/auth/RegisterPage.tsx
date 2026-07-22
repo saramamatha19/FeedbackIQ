@@ -11,6 +11,21 @@ export function RegisterPage() {
   const [password, setPassword] = useState('')
   const register = useRegister()
 
+  if (register.isSuccess) {
+    return (
+      <Card className="p-6 text-center">
+        <div className="text-3xl">✅</div>
+        <h2 className="mt-3 text-sm font-semibold">Account created</h2>
+        <p className="mt-1 text-xs text-[var(--color-ink-muted)]">
+          An admin needs to approve your account before you can sign in. Check back soon.
+        </p>
+        <Link to="/login" className="mt-4 inline-block text-xs font-medium text-blue-600 hover:underline">
+          Back to sign in
+        </Link>
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-6">
       <form

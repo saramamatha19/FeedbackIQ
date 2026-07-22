@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { exportFeedbackCsvUrl, fetchFeedback } from '@/api/feedback'
+import { deleteFeedbackAsAdmin } from '@/api/admin'
+import { apiErrorMessage } from '@/api/client'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -61,10 +64,21 @@ export function FeedbackTable({
   const [urgency, setUrgency] = useState(ALL)
   const [theme, setTheme] = useState(ALL)
   const openDrawer = useUiStore((s) => s.openFeedbackDrawer)
+  const queryClient = useQueryClient()
+  const resolvedQueryKey = queryKey ?? ['feedback-list', uploadId]
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKey ?? ['feedback-list', uploadId],
+    queryKey: resolvedQueryKey,
     queryFn: queryFn ?? (() => fetchFeedback({ upload_id: uploadId, limit: 100 })),
+  })
+
+  const deleteRow = useMutation({
+    mutationFn: deleteFeedbackAsAdmin,
+    onSuccess: () => {
+      toast.success('Feedback deleted.')
+      queryClient.invalidateQueries({ queryKey: resolvedQueryKey })
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not delete feedback.')),
   })
 
   const filtered = useMemo(
@@ -130,7 +144,8 @@ export function FeedbackTable({
                 <th className="py-2 pr-3 font-medium">Urgency</th>
                 <th className="py-2 pr-3 font-medium">Theme</th>
                 <th className="py-2 pr-3 font-medium">Source</th>
-                <th className="py-2 font-medium">Preview</th>
+                <th className="py-2 pr-3 font-medium">Preview</th>
+                {feedbackScope === 'admin' && <th className="py-2 font-medium">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -167,9 +182,25 @@ export function FeedbackTable({
                   </td>
                   <td className="py-2.5 pr-3 text-xs">{row.prediction?.theme ?? '—'}</td>
                   <td className="py-2.5 pr-3 text-xs text-[var(--color-ink-muted)]">{row.source_label || '—'}</td>
-                  <td className="py-2.5 text-[var(--color-ink-secondary)]">
+                  <td className="py-2.5 pr-3 text-[var(--color-ink-secondary)]">
                     {truncate(row.raw_text, 60)} →
                   </td>
+                  {feedbackScope === 'admin' && (
+                    <td className="py-2.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (window.confirm('Delete this feedback entry? This cannot be undone.')) {
+                            deleteRow.mutate(row.id)
+                          }
+                        }}
+                        disabled={deleteRow.isPending}
+                        className="text-xs font-medium text-red-500 hover:underline disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -3,6 +3,11 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db.models.contradiction import ContradictionPair
+from app.db.models.dashboard import DashboardSnapshot
+from app.db.models.duplicate import DuplicateGroup, DuplicateGroupMember
+from app.db.models.feedback import Feedback
+from app.db.models.prediction import AIPrediction
 from app.db.models.status_history import ProcessingStatusHistory
 from app.db.models.upload import Upload
 
@@ -74,4 +79,33 @@ def mark_completed(db: Session, upload: Upload) -> None:
 def increment_processed(db: Session, upload: Upload, *, processed: int = 0, failed: int = 0) -> None:
     upload.processed_rows += processed
     upload.failed_rows += failed
+    db.commit()
+
+
+def delete(db: Session, upload_id: uuid.UUID) -> None:
+    """Deletes an entire uploaded dataset — all its feedback rows and everything
+    derived from them (predictions, duplicate groups, contradictions, snapshots,
+    stage history) — so admin can remove a suspicious dataset in one action."""
+    feedback_ids = list(db.scalars(select(Feedback.id).where(Feedback.upload_id == upload_id)))
+
+    if feedback_ids:
+        db.query(AIPrediction).filter(AIPrediction.feedback_id.in_(feedback_ids)).delete(
+            synchronize_session=False
+        )
+    db.query(ContradictionPair).filter(ContradictionPair.upload_id == upload_id).delete(
+        synchronize_session=False
+    )
+    group_ids = list(db.scalars(select(DuplicateGroup.id).where(DuplicateGroup.upload_id == upload_id)))
+    if group_ids:
+        db.query(DuplicateGroupMember).filter(DuplicateGroupMember.group_id.in_(group_ids)).delete(
+            synchronize_session=False
+        )
+    db.query(DuplicateGroup).filter(DuplicateGroup.upload_id == upload_id).delete(synchronize_session=False)
+
+    db.query(Feedback).filter(Feedback.upload_id == upload_id).delete(synchronize_session=False)
+    db.query(DashboardSnapshot).filter(DashboardSnapshot.upload_id == upload_id).delete(synchronize_session=False)
+    db.query(ProcessingStatusHistory).filter(ProcessingStatusHistory.upload_id == upload_id).delete(
+        synchronize_session=False
+    )
+    db.query(Upload).filter(Upload.id == upload_id).delete(synchronize_session=False)
     db.commit()

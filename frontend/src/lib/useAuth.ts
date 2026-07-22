@@ -34,14 +34,10 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
   return useMutation({
+    // Registration no longer logs the user in — the account is pending admin
+    // approval, so there's no session to establish yet (see auth_service.authenticate_user).
     mutationFn: authApi.register,
-    onSuccess: (user) => {
-      queryClient.setQueryData(['me'], user)
-      navigate('/dashboard')
-    },
   })
 }
 

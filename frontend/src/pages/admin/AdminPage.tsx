@@ -1,7 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { fetchAdminDashboard, fetchAllUsers, fetchUsageStats } from '@/api/admin'
+import { toast } from 'sonner'
+import { approveUser, fetchAdminDashboard, fetchAllUsers, fetchUsageStats, rejectUser } from '@/api/admin'
+import { apiErrorMessage } from '@/api/client'
 import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatDate } from '@/lib/formatters'
 import { KpiRow } from '@/features/dashboard/KpiRow'
@@ -23,6 +26,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 }
 
 export function AdminPage() {
+  const queryClient = useQueryClient()
   const { data: usage, isLoading: usageLoading } = useQuery({
     queryKey: ['admin-usage'],
     queryFn: fetchUsageStats,
@@ -34,6 +38,23 @@ export function AdminPage() {
   const { data: dashboard, isLoading: dashboardLoading } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: fetchAdminDashboard,
+  })
+
+  const approve = useMutation({
+    mutationFn: approveUser,
+    onSuccess: () => {
+      toast.success('User approved.')
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not approve user.')),
+  })
+  const reject = useMutation({
+    mutationFn: rejectUser,
+    onSuccess: () => {
+      toast.success('User rejected.')
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not reject user.')),
   })
 
   return (
@@ -93,25 +114,61 @@ export function AdminPage() {
                 <th className="py-2 pr-3 font-medium">Email</th>
                 <th className="py-2 pr-3 font-medium">Name</th>
                 <th className="py-2 pr-3 font-medium">Role</th>
-                <th className="py-2 font-medium">Joined</th>
+                <th className="py-2 pr-3 font-medium">Status</th>
+                <th className="py-2 pr-3 font-medium">Joined</th>
+                <th className="py-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users?.map((u) => (
-                <tr
-                  key={u.id}
-                  className="border-b border-[var(--color-border)] last:border-0 hover:bg-black/5 dark:hover:bg-white/5"
-                >
-                  <td className="py-2.5 pr-3">
-                    <Link to={`/admin/users/${u.id}`} className="text-blue-600 hover:underline">
-                      {u.email}
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-3 text-[var(--color-ink-secondary)]">{u.full_name ?? '—'}</td>
-                  <td className="py-2.5 pr-3">{u.role}</td>
-                  <td className="py-2.5 text-xs text-[var(--color-ink-muted)]">{formatDate(u.created_at)}</td>
-                </tr>
-              ))}
+              {users?.map((u) => {
+                const pending = u.is_active && !u.is_approved && u.role !== 'admin'
+                const rejected = !u.is_active
+                return (
+                  <tr
+                    key={u.id}
+                    className="border-b border-[var(--color-border)] last:border-0 hover:bg-black/5 dark:hover:bg-white/5"
+                  >
+                    <td className="py-2.5 pr-3">
+                      <Link to={`/admin/users/${u.id}`} className="text-blue-600 hover:underline">
+                        {u.email}
+                      </Link>
+                    </td>
+                    <td className="py-2.5 pr-3 text-[var(--color-ink-secondary)]">{u.full_name ?? '—'}</td>
+                    <td className="py-2.5 pr-3">{u.role}</td>
+                    <td className="py-2.5 pr-3">
+                      {rejected ? (
+                        <span className="text-xs font-medium text-red-500">Rejected</span>
+                      ) : pending ? (
+                        <span className="text-xs font-medium text-amber-500">Pending</span>
+                      ) : (
+                        <span className="text-xs font-medium text-green-600">Approved</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-3 text-xs text-[var(--color-ink-muted)]">{formatDate(u.created_at)}</td>
+                    <td className="py-2.5">
+                      {pending && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            disabled={approve.isPending}
+                            onClick={() => approve.mutate(u.id)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={reject.isPending}
+                            onClick={() => reject.mutate(u.id)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           </div>
