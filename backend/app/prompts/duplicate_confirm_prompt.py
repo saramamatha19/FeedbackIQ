@@ -117,3 +117,8 @@ def build_messages(pairs: list[dict], *, is_retry: bool = False) -> list[dict]:
         messages.append({"role": "assistant", "content": str({"results": [ex["output"]]})})
     messages.append({"role": "user", "content": f"Compare each of the following {len(pairs)} pair(s): {pairs}"})
     return messages
+
+
+'''Different customers can describe the same issue using different words. 
+The duplicate confirmation prompt determines whether two feedback items refer 
+to the same underlying problem so the dashboard can group them together.'''

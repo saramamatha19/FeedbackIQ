@@ -21,3 +21,5 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+#keeps secret keys out of code and loads settings once(@lru_cache) and creates object for future use.

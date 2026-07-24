@@ -20,3 +20,10 @@ class TimestampMixin:
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+'''"This file defines reusable base classes for all database models. 
+Base tells SQLAlchemy which classes are database tables. 
+UUIDPrimaryKeyMixin automatically adds a UUID primary key called id to every table,
+ and TimestampMixin automatically adds a created_at timestamp. Using mixins 
+ avoids repeating the same id and created_at code in every model, 
+making the code cleaner and easier to maintain."'''

@@ -163,3 +163,11 @@ def get_latest_snapshot(db: Session, *, user_id: uuid.UUID, upload_id: uuid.UUID
         .limit(1)
     )
     return db.scalar(stmt)
+'''
+"The dashboard_service.py file is responsible for generating the dashboard data.
+ It reads the latest AI predictions from the database, aggregates them into metrics like category counts, 
+ sentiment distribution, top themes, duplicate and contradiction counts, and bug rankings. 
+ It then sends only these aggregated statistics to the LLM to generate three key insights, combines everything 
+ into a single JSON snapshot, 
+ stores it in the DashboardSnapshot table,
+ and the frontend simply reads this cached snapshot instead of recomputing all analytics on every request."'''
